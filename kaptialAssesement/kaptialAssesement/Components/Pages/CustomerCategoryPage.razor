@@ -1,0 +1,59 @@
+﻿@page "/category"
+@inject Services.ICustomerCategoryService CustomerCategoryService
+@inject NavigationManager _nav
+@rendermode InteractiveServer
+
+<PageTitle>Customer Categories</PageTitle>
+
+<h1>Customer Categories</h1>
+<td><button class="btn btn-primary" @onclick="@(() => _nav.NavigateTo("/edit-category"))">Create New Category</button></td>
+@if (customersCategories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>CategoryId</th>
+                <th>Name</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customersCategorie in customersCategories)
+            {
+                <tr>
+                    <td>@customersCategorie.CategoryId</td>
+                    <td>@customersCategorie.CategoryName</td>
+                    <td><button class="btn btn-primary" @onclick="() => editCategory(customersCategorie.CategoryId)">Edit</button></td>
+                    <td><button class="btn btn-danger" @onclick="() => deleteCategory(customersCategorie.CategoryId)">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<CustomerCategory>? customersCategories = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customersCategories = await CustomerCategoryService.GetAllCustomerCategories();
+    }
+
+    void deleteCategory(int Id)
+    {
+        CustomerCategoryService.DeleteCategory(Id);
+        _nav.NavigateTo(_nav.Uri, true);
+    }
+
+
+    void editCategory(int Id)
+    {
+        var uri = "/edit-category/" + Id;
+        _nav.NavigateTo(uri);
+    }
+}

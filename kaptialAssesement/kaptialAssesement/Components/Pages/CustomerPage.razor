@@ -1,0 +1,72 @@
+﻿@page "/customer"
+@inject Services.ICustomerService CustomerService
+@inject NavigationManager _nav
+@rendermode InteractiveServer
+
+<PageTitle>Customer</PageTitle>
+<h1>Customer</h1>
+<td><button class="btn btn-primary" @onclick="@(() => _nav.NavigateTo("/edit-customer"))">Create New Customer</button></td>
+@if (customers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>CustomerID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Category</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in customers)
+            {
+                <tr>
+                    <td>@customer.CustomerId</td>
+                    <td>@customer.Name</td>
+                    <td>@customer.Email</td>
+                    <td>@customer.PhoneNumber</td>
+                    @if (customer.Category != null)
+                    {
+                        <td>@customer.Category.CategoryName</td>
+                    }
+                    else
+                    {
+                        <td>None</td>
+                    }
+                    <td><button class="btn btn-primary" @onclick="() => editCustomer(customer.CustomerId)">Edit</button></td>
+                    <td><button class="btn btn-danger" @onclick="() => deleteCustomer(customer.CustomerId)">Delete</button></td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    List<Customer>? customers = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerService.GetAllCustomers();
+    }
+
+    void deleteCustomer(int Id)
+    {
+        CustomerService.DeleteCustomer(Id);
+        _nav.NavigateTo(_nav.Uri, true);
+    }
+
+    void editCustomer(int Id)
+    {
+        var uri = "/edit-customer/" + Id;
+        _nav.NavigateTo(uri);
+    }
+}

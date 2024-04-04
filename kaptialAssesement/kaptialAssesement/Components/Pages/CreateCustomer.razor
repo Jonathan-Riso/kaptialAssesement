@@ -1,0 +1,84 @@
+﻿@page "/edit-customer"
+@page "/edit-customer/{id:int}"
+@inject Services.ICustomerService CustomerService
+@inject Services.ICustomerCategoryService CustomerCategoryService
+@inject NavigationManager _nav
+
+@rendermode InteractiveServer
+
+<h3>Creating/Editing a Customer</h3>
+
+<EditForm Model="customer" OnSubmit="HandleSubmit" FormName="editCustomer">
+	<label>Name</label>
+	<br />
+	<InputText @bind-Value="customer.Name" ></InputText>
+	<br />
+	<label>Email</label>
+	<br />
+	<InputText @bind-Value="customer.Email"></InputText>
+	<br />
+	<label>Phone Number</label>
+	<br />
+	<InputText @bind-Value="customer.PhoneNumber"></InputText>
+	<br />
+	<label>Category</label>
+	<br />
+	@if (categories==null){ <label>Loading Categories...</label>
+	}
+	else
+	{
+		<InputSelect id="categories" @bind-Value="customer.CategoryId">
+			<option value=null>Choose Category</option>
+			@foreach (var category in categories)
+			{
+				<option value="@category.CategoryId">@category.CategoryName</option>
+			}
+		</InputSelect>
+	}
+	<br />
+	<br />
+	<button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+@code {
+	[Parameter]
+	public int? Id { get; set; }
+
+	[SupplyParameterFromForm]
+	Customer customer { get; set; } = new Customer { };
+
+	List<CustomerCategory>? categories = new List<CustomerCategory>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		categories = await CustomerCategoryService.GetAllCustomerCategories();
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (Id != null)
+		{
+			var found_customer = await CustomerService.GetCustomerById(Id);
+			if (found_customer != null)
+			{
+				customer.Name = found_customer.Name;
+				customer.Email = found_customer.Email;
+				customer.PhoneNumber = found_customer.PhoneNumber;
+				customer.CategoryId = found_customer.CategoryId;
+			}
+		}
+	}
+
+	async Task HandleSubmit()
+	{
+		if (Id != null)
+		{
+			await CustomerService.EditCustomer(Id, customer);
+		}
+		else
+		{
+			await CustomerService.CreateCustomer(customer);
+		}
+		_nav.NavigateTo("/customer");
+	}
+}

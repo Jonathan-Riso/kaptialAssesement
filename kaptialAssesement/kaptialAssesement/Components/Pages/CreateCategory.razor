@@ -1,0 +1,53 @@
+﻿@page "/edit-category"
+@page "/edit-category/{id:int}"
+
+@inject Services.ICustomerCategoryService CustomerCategoryService
+@inject NavigationManager _nav
+
+@rendermode InteractiveServer
+
+<h3>Creating/Editing a Category</h3>
+
+<EditForm Model="category" OnSubmit="HandleSubmit" FormName="editCategory">
+	<label>Name</label>
+	<br />
+	<InputText @bind-Value="category.CategoryName" />
+	<br />
+	<br />
+	<button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+@code {
+	[Parameter]
+	public int? Id { get; set; }
+
+
+	[SupplyParameterFromForm]
+	CustomerCategory category { get; set; } = new CustomerCategory {};
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (Id != null)
+		{
+			var found_category = await CustomerCategoryService.GetCategoryById(Id);
+			if (found_category != null)
+			{
+				category.CategoryName = found_category.CategoryName;
+			}
+		}
+	}
+
+
+	async Task HandleSubmit()
+	{
+		if (Id != null)
+		{
+			await CustomerCategoryService.EditCategory(Id, category);
+		}
+		else
+		{
+			await CustomerCategoryService.CreateCategory(category);
+		}
+		_nav.NavigateTo("/category");
+	}
+}
