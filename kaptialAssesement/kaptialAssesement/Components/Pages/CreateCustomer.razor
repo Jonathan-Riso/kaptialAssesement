@@ -8,6 +8,10 @@
 
 <h3>Creating/Editing a Customer</h3>
 
+@if (invalid)
+{
+	<p style="color:#ff0000">Invalid Customer!</p>
+}
 <EditForm Model="customer" OnSubmit="HandleSubmit" FormName="editCustomer">
 	<label>Name</label>
 	<br />
@@ -41,6 +45,9 @@
 </EditForm>
 
 @code {
+
+	bool invalid = false;
+
 	[Parameter]
 	public int? Id { get; set; }
 
@@ -71,14 +78,24 @@
 
 	async Task HandleSubmit()
 	{
+		HttpStatusCode response;
+
 		if (Id != null)
 		{
-			await CustomerService.EditCustomer(Id, customer);
+			response = await CustomerService.EditCustomer(Id, customer);
 		}
 		else
 		{
-			await CustomerService.CreateCustomer(customer);
+			response = await CustomerService.CreateCustomer(customer);
 		}
-		_nav.NavigateTo("/customer");
+		if (response == HttpStatusCode.Created)
+		{
+			invalid = false;
+			_nav.NavigateTo("/customer");
+		}
+		else
+		{
+			invalid = true;
+		}
 	}
 }
