@@ -8,6 +8,10 @@
 
 <h3>Creating/Editing a Category</h3>
 
+@if (invalid)
+{
+	<p style="color:#ff0000">Invalid Category!</p>
+}
 <EditForm Model="category" OnSubmit="HandleSubmit" FormName="editCategory">
 	<label>Name</label>
 	<br />
@@ -18,6 +22,9 @@
 </EditForm>
 
 @code {
+
+	bool invalid = false;
+
 	[Parameter]
 	public int? Id { get; set; }
 
@@ -40,14 +47,23 @@
 
 	async Task HandleSubmit()
 	{
+		HttpStatusCode response;
 		if (Id != null)
 		{
-			await CustomerCategoryService.EditCategory(Id, category);
+			response = await CustomerCategoryService.EditCategory(Id, category);
 		}
 		else
 		{
-			await CustomerCategoryService.CreateCategory(category);
+			response = await CustomerCategoryService.CreateCategory(category);
 		}
-		_nav.NavigateTo("/category");
+		if (response == HttpStatusCode.Created)
+		{
+			invalid = false;
+			_nav.NavigateTo("/category");
+		}
+		else
+		{
+			invalid = true;
+		}
 	}
 }

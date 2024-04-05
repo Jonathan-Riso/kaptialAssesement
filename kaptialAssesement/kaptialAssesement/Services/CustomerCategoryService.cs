@@ -24,10 +24,12 @@ namespace kaptialAssesement.Services
 
         public async Task<HttpStatusCode> CreateCategory(CustomerCategory category)
 		{
+            if (category.CategoryName == null || category.CategoryName.Length <= 0  || category.CategoryName.Length > 199) {  return HttpStatusCode.BadRequest; }
+
 			_context.CustomerCategories.Add(category);
 			await _context.SaveChangesAsync();
 
-			return HttpStatusCode.Accepted;
+			return HttpStatusCode.Created;
 		}
 
         public async Task<HttpStatusCode> EditCategory(int? Id, CustomerCategory category)
@@ -35,10 +37,12 @@ namespace kaptialAssesement.Services
             var found_category = _context.CustomerCategories.Find(Id);
             if (found_category == null) { return HttpStatusCode.NotFound; }
 
-            found_category.CategoryName = category.CategoryName;
-            await _context.SaveChangesAsync();
+			if (category.CategoryName == null || category.CategoryName.Length <= 0 || category.CategoryName.Length > 199) { return HttpStatusCode.BadRequest; }
 
-            return HttpStatusCode.Accepted;
+            found_category.CategoryName = category.CategoryName;
+			await _context.SaveChangesAsync();
+
+            return HttpStatusCode.Created;
         }
 
         public async Task<HttpStatusCode> DeleteCategory(int Id)
